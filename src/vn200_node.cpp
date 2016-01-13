@@ -50,7 +50,7 @@ ros::Publisher pub_sensors;
 // Device
 Vn200 vn200;
 
-void asyncDataListener(Vn200* sender, Vn200CompositeData* data)
+void asyncDataListener(void* sender, VnDeviceCompositeData* data)
 {
   //TODO: Publish messages perhaps? ;)
 
@@ -186,10 +186,10 @@ void asyncDataListener(Vn200* sender, Vn200CompositeData* data)
 	  "  GPS Week:               %u\n"
 	  "  GPS Fix:                %s (%u)\n"
 	  "  GPS Satellites:         %u\n",
-	  data->gpsTimeOfWeek,
+	  data->gpsTowSec,
 	  data->gpsWeek,
 	  gpsFix.c_str(), data->gpsFix,
-	  data->numberOfSatellites);
+	  data->numSats);
 
     ROS_INFO(
 	  "\n  LLA.Lattitude:          %+#7.2f\n"
@@ -211,15 +211,15 @@ void asyncDataListener(Vn200* sender, Vn200CompositeData* data)
 	  "\n  Position Accuracy X:    %+#7.2f\n"
 	  "  Position Accuracy Y:    %+#7.2f\n"
 	  "  Position Accuracy Z:    %+#7.2f\n",
-	  data->positionAccuracy.c0,
-	  data->positionAccuracy.c1,
-	  data->positionAccuracy.c2);
+	  data->gpsPosU.c0,
+	  data->gpsPosU.c1,
+	  data->gpsPosU.c2);
 
     ROS_INFO(
 	  "\n  Speed Accuracy:         %+#7.2f\n"
 	  "  Time Accuracy:          %+#7.2f\n",
-	  data->speedAccuracy,
-	  data->timeAccuracy);
+	  data->gpsVelU,
+	  data->timeAccSec);
 
     ROS_INFO(
 	  "\n  INS Status:             %7.4X\n"
@@ -236,8 +236,8 @@ void asyncDataListener(Vn200* sender, Vn200CompositeData* data)
 	  "  Position Uncertainty:   %+#7.2f\n"
 	  "  Velocity Uncertainty:   %+#7.2f\n",
 	  data->attitudeUncertainty,
-	  data->positionUncertainty,
-	  data->velocityUncertainty);
+	  data->posU,
+	  data->velU);
 
 }
 
@@ -269,7 +269,7 @@ void poll_device()
       float speedAccuracy, timeAccuracy;
       VnVector3 positionAccuracy;
 
-      vn200_getGpsSolution( &vn200,
+      vn200_getGpsSolutionLla( &vn200,
                           &gpsTime,
                           &gpsWeek,
                           &gpsFix,
@@ -316,7 +316,7 @@ void poll_device()
       VnVector3 ypr;
       float attitudeUncertainty, positionUncertainty, velocityUncertainty;
       
-      vn200_getInsSolution( &vn200,
+      vn200_getInsSolutionLla( &vn200,
                             &gpsTime,
                             &gpsWeek,
                             &status,
@@ -363,12 +363,12 @@ void poll_device()
       VnVector3 magnetic, acceleration, angularRate;
       float temperature, pressure;
       
-      vn200_getCalibratedSensorMeasurements(  &vn200,
-                                              &magnetic,
-                                              &acceleration,
-                                              &angularRate,
-                                              &temperature,
-                                              &pressure );
+      vn200_getImuMeasurements( &vn200,
+                                &magnetic,
+                                &acceleration,
+                                &angularRate,
+                                &temperature,
+                                &pressure );
 
       vectornav::sensors msg_sensors;
       msg_sensors.header.seq      = seq;
