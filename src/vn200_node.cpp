@@ -37,7 +37,7 @@
 // Message Types
 #include <vectornav/utc_time.h>
 #include <vectornav/gps.h>
-#include <vectornav/ins.h>
+#include <had_system/ins.h>
 #include <vectornav/sensors.h>
 
 #include <vectornav/sync_in.h>
@@ -195,7 +195,7 @@ void publish_ins_data()
 
     if (pub_ins.getNumSubscribers() > 0)
     {
-        vectornav::ins msg_ins;
+        had_system::ins msg_ins;
         msg_ins.header.seq      = ins_seq;
         msg_ins.header.stamp    = timestamp;
         msg_ins.header.frame_id = "ins";
@@ -625,7 +625,7 @@ void poll_ins()
                 &positionUncertainty,
                 &velocityUncertainty );            
 
-        vectornav::ins msg_ins;
+        had_system::ins msg_ins;
         msg_ins.header.seq      = ins_seq;
         msg_ins.header.stamp    = timestamp;
         msg_ins.header.frame_id = imu_frame_id;
@@ -835,7 +835,7 @@ int main( int argc, char* argv[] )
     n_.param<int>(        "binary_imu_data_output_rate"  , binary_imu_data_rate, 100); 
 
     // Initialize Publishers
-    pub_ins     = n_.advertise<vectornav::ins>    ("ins", 1000);
+    pub_ins     = n_.advertise<had_system::ins>    ("ins", 1000);
     pub_gps     = n_.advertise<vectornav::gps>    ("gps", 1000);
     pub_sensors = n_.advertise<vectornav::sensors>("imu", 1000);
     pub_sync_in = n_.advertise<vectornav::sync_in>("sync_in", 1000);
